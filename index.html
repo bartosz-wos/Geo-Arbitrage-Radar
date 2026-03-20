@@ -1,118 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Geo-Arbitrage-Radar MVP</title>
+  <meta charset="UTF-8">
+  <title>Geo Arbitrage Radar MVP</title>
+
   <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
   <script src="https://unpkg.com/maplibre-gl@3.0.0/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@3.0.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <style>
-    body { margin: 0; padding: 0; background-color: #000; color: #00ffcc; font-family: monospace;}
-    #map { width: 100vw; height: 100vh; }
-    #ui-panel { position: absolute; top: 20px; left: 20px; z-index: 100; background: rgba(15, 15, 25, 0.9); padding: 20px; border: 1px solid #00ffcc; border-radius: 8px; width: 300px;}
-    .slider-container { margin-top: 15px; }
-    input[type=range] { width: 100%; cursor: pointer; }
-    .value-display { float: right; font-weight: bold; color: #ff003c; }
-  </style>
+
+  <link href="style.css" rel="stylesheet" />
 </head>
 <body>
-  <div id="ui-panel">
-    <h2>Geo Arbitrage Radar</h2>
-    <p>Offers count: <span id="offer-count">0</span></p>
-    
-    <div class="slider-container">
-      <label>Radius of analysis</label>
-      <span class="value-display" id="radius-val">2.0 km</span>
-      <input type="range" id="radius-slider" min="0.5" max="5.0" step="0.5" value="2.0">
-    </div>
 
-    <div class="slider-container">
-      <label>Arbitrage threshold</label>
-      <span class="value-display" id="threshold-val">20 %</span>
-      <input type="range" id="threshold-slider" min="5" max="50" step="5" value="20">
+  <div id="ui-panel" class="panel">
+    <div class="panel-header" onclick="togglePanel('ui-content', 'ui-arrow')">
+      <h2>Settings</h2>
+      <span id="ui-arrow">▼</span>
+    </div>
+    <div id="ui-content" class="panel-content">
+      <p style="margin-top: 15px;">Offer count: <span id="offer-count" style="color:white;">0</span></p>
+
+      <div class="slider-container">
+        <label>Analysis Radius</label>
+        <span class="value-display" id="radius-val">2.0 km</span>
+        <input type="range" id="radius-slider" min="0.5" max="5.0" step="0.5" value="2.0">
+      </div>
+
+      <div class="slider-container">
+        <label>Arbitrage Threshold</label>
+        <span class="value-display" id="threshold-val">20 %</span>
+        <input type="range" id="threshold-slider" min="5" max="50" step="5" value="20">
+      </div>
+
+      <div style="margin-top: 20px; border-top: 1px solid rgba(0,255,204,0.3); padding-top: 15px;">
+        <label style="display: block; margin-bottom: 8px; cursor: pointer;">
+          <input type="checkbox" id="toggle-hex" checked style="accent-color: #00ffcc;"> Show Heatmap
+        </label>
+        <label style="display: block; margin-bottom: 8px; cursor: pointer;">
+          <input type="checkbox" id="toggle-dots" checked style="accent-color: #ff003c;"> Show deals
+        </label>
+        <label style="display: block; cursor: pointer;">
+          <input type="checkbox" id="toggle-all-offers" style="accent-color: #00ffcc;"> Show all offers
+        </label>
+      </div>
     </div>
   </div>
+
+  <div id="deals-panel" class="panel">
+    <div class="panel-header" onclick="togglePanel('deals-content', 'deals-arrow')">
+      <h2>TOP 5 Offers</h2>
+      <span id="deals-arrow">▼</span>
+    </div>
+    <div id="deals-content" class="panel-content hidden">
+      <ul id="deals-list">
+        <li style="color: #aaa;">Use sliders to find offers...</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="tooltip" class="hidden"></div>
+
+  <button id="fly-home-btn" onclick="flyHome()">Center the map</button>
+
   <div id="map"></div>
 
-  <script>
-    let globalData = [];
-    let currentRadius = 2.0;
-    let currentThreshold = 20;
+  <script src="app.js"></script>
 
-    const deckgl = new deck.DeckGL({
-      container: 'map',
-      initialViewState: { longitude: 21.005, latitude: 52.231, zoom: 12.5, pitch: 45, bearing: 0 },
-      controller: true,
-      mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
-      layers: []
-    });
-
-    function getDistanceKm(lon1, lat1, lon2, lat2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    function checkArbitrage(point) {
-      let neighborsPrices = [];
-      
-      globalData.forEach(other => {
-        let dist = getDistanceKm(point.position[0], point.position[1], other.position[0], other.position[1]);
-        if (dist <= currentRadius) {
-          neighborsPrices.push(other.price);
-        }
-      });
-
-      if (neighborsPrices.length <= 1) return false; 
-
-      let avgLocalPrice = neighborsPrices.reduce((a, b) => a + b, 0) / neighborsPrices.length;
-      
-      let discount = 1.0 - (point.price / avgLocalPrice);
-      return discount >= (currentThreshold / 100.0);
-    }
-
-    function renderMap() {
-      const scatterLayer = new deck.ScatterplotLayer({
-        id: 'arbitrage-layer',
-        data: globalData,
-        getPosition: d => d.position,
-        getFillColor: d => checkArbitrage(d) ? [255, 0, 60, 255] : [0, 255, 204, 80],
-        getRadius: d => checkArbitrage(d) ? 80 : 30,
-        radiusMinPixels: 6,
-        pickable: true,
-        updateTriggers: {
-            getFillColor: [currentRadius, currentThreshold],
-            getRadius: [currentRadius, currentThreshold]
-        },
-        onClick: info => {
-          if (info.object) alert(`${info.object.address}\nPrice: ${info.object.price} PLN/m²`);
-        }
-      });
-      deckgl.setProps({ layers: [scatterLayer] });
-    }
-
-    document.getElementById('radius-slider').addEventListener('input', (e) => {
-      currentRadius = parseFloat(e.target.value);
-      document.getElementById('radius-val').innerText = currentRadius.toFixed(1) + ' km';
-      renderMap();
-    });
-
-    document.getElementById('threshold-slider').addEventListener('input', (e) => {
-      currentThreshold = parseInt(e.target.value);
-      document.getElementById('threshold-val').innerText = currentThreshold + ' %';
-      renderMap();
-    });
-
-    fetch('data.json')
-      .then(r => r.json())
-      .then(data => {
-        globalData = data;
-        document.getElementById('offer-count').innerText = data.length;
-        renderMap();
-      });
-  </script>
 </body>
 </html>
