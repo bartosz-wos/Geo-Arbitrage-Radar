@@ -149,7 +149,7 @@ if __name__ == '__main__':
     final_data = process_data(fetch_offers())
     
     if final_data:
-        with open('data.json', 'w', encoding='utf-8') as f:
+        with open('data/data.json', 'w', encoding='utf-8') as f:
             json.dump(final_data, f, ensure_ascii=False, indent=2)
         print(f'\nFound {len(final_data)} offers')
     else:

@@ -1,0 +1,42 @@
+[
+  {
+    "title": "OLX Offer",
+    "address": "Warszawa, Żoliborz",
+    "position": [
+      20.990717242524962,
+      52.26420039035814
+    ],
+    "price": 19627,
+    "url": "https://www.olx.pl/d/oferta/2-pokojowe-mieszkanie-50-9m2-blisko-starego-miasta-CID3-ID19QvI8.html"
+  },
+  {
+    "title": "OLX Offer",
+    "address": "Warszawa, Białołęka",
+    "position": [
+      21.01301258283311,
+      52.32188383169746
+    ],
+    "price": 18483,
+    "url": "https://www.olx.pl/d/oferta/sprzedam-2-pok-aroma-park-z-garderoba-CID3-ID19MRJi.html"
+  },
+  {
+    "title": "OLX Offer",
+    "address": "Warszawa, Bielany",
+    "position": [
+      20.9489965607829,
+      52.27179225422507
+    ],
+    "price": 14201,
+    "url": "https://www.olx.pl/d/oferta/mieszkanie-50-7m-warszawa-ul-szekspira-2-CID3-ID19rwtn.html"
+  },
+  {
+    "title": "OLX Offer",
+    "address": "Warszawa, Praga-Południe",
+    "position": [
+      21.073586000571588,
+      52.23407097000842
+    ],
+    "price": 16772,
+    "url": "https://www.olx.pl/d/oferta/kinowa-53-6-m2-swietna-lokalizacja-CID3-ID19S1U6.html"
+  }
+]
