@@ -79,13 +79,10 @@ function renderMap() {
   const scatterLayer = new deck.ScatterplotLayer({
     id: 'arbitrage-layer',
     data: processedData,
-    // FIX 1: Warstwa musi być widoczna, jeśli którykolwiek z checkboxów jest zaznaczony
     visible: showDots || showAllOffers, 
     getPosition: d => d.position,
     getFillColor: d => {
-        // Priorytet dla okazji (czerwone)
         if (showDots && d.isDeal) return [255, 0, 60, 255]; 
-        // Reszta (morskie)
         if (showAllOffers) return [0, 255, 204, 80]; 
         return [0, 0, 0, 0];
     },
@@ -96,7 +93,6 @@ function renderMap() {
     },
     radiusMinPixels: 8,
     pickable: true,
-    // FIX 2: Dodano brakujące triggery, żeby mapa wiedziała kiedy przeliczyć kolory
     updateTriggers: { 
         getFillColor: [showDots, showAllOffers, currentRadius, currentThreshold],
         getRadius: [showDots, showAllOffers, currentRadius, currentThreshold]
@@ -138,7 +134,7 @@ function renderMap() {
   const top5 = deals.slice(0, 5);
 
   const listHtml = top5.length === 0
-    ? '<li style="color:#aaa;">Brak ofert dla zadanych kryteriów</li>'
+    ? '<li style="color:#aaa;">No offers for given criteria</li>'
     : top5.map(d => `
         <li class="deal-item" onclick="flyTo([${d.position[0]}, ${d.position[1]}])">
           <span class="deal-address" style="font-size: 12px;">${d.title ? d.title.substring(0, 25) + '...' : d.address}</span>
@@ -150,7 +146,6 @@ function renderMap() {
   document.getElementById('deals-list').innerHTML = listHtml;
 }
 
-// FIX 3: Używamy viewState zamiast initialViewState, żeby wymusić ruch kamery
 window.flyTo = function(position) {
   deckgl.setProps({
     viewState: {
@@ -162,7 +157,6 @@ window.flyTo = function(position) {
       transitionDuration: 1000, 
       transitionInterpolator: new deck.FlyToInterpolator()
     },
-    // Musimy też zsynchronizować onViewStateChange, żeby kontroler mapy nie "odskoczył"
     onViewStateChange: ({viewState}) => {
       deckgl.setProps({viewState});
     }
@@ -182,7 +176,6 @@ window.flyHome = function() {
   });
 };
 
-// Event Listeners bez zmian
 document.getElementById('radius-slider').addEventListener('input', (e) => {
   currentRadius = parseFloat(e.target.value);
   document.getElementById('radius-val').innerText = currentRadius.toFixed(1) + ' km';
@@ -210,7 +203,7 @@ document.getElementById('toggle-all-offers').addEventListener('change', (e) => {
   renderMap();
 });
 
-fetch('data.json').then(r => r.json()).then(data => {
+fetch('data/data.json').then(r => r.json()).then(data => {
   globalData = data;
   document.getElementById('offer-count').innerText = data.length;
   renderMap();
