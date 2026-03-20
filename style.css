@@ -1,0 +1,48 @@
+body { margin: 0; padding: 0; background-color: #050505; color: #00ffcc; font-family: 'Courier New', Courier, monospace;}
+#map { width: 100vw; height: 100vh; }
+
+#ui-panel { position: absolute; top: 20px; left: 20px; z-index: 100; background: rgba(10, 10, 15, 0.95); border: 1px solid #00ffcc; border-radius: 8px; width: 300px; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);}
+#deals-panel { position: absolute; top: 20px; right: 20px; z-index: 100; background: rgba(15, 10, 15, 0.95); border: 1px solid #ff003c; border-radius: 8px; width: 320px; box-shadow: 0 0 15px rgba(255, 0, 60, 0.2);}
+
+.panel-header {
+  padding: 15px 20px; cursor: pointer; user-select: none;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0, 255, 204, 0.05); border-radius: 8px;
+}
+.panel-header:hover { background: rgba(0, 255, 204, 0.15); }
+#deals-panel .panel-header:hover { background: rgba(255, 0, 60, 0.15); }
+.panel-header h2 { margin: 0; font-size: 1.1rem; }
+
+.panel-content { padding: 0 20px 20px 20px; }
+.hidden { display: none !important; }
+
+.slider-container { margin-top: 20px; }
+input[type=range] { width: 100%; cursor: pointer; accent-color: #ff003c; }
+.value-display { float: right; font-weight: bold; color: #ff003c; }
+
+#deals-list { list-style: none; padding: 0; margin: 0; margin-top: 15px;}
+.deal-item { background: rgba(255, 0, 60, 0.1); border-left: 4px solid #ff003c; margin-bottom: 10px; padding: 10px; font-size: 14px; cursor: pointer; transition: 0.2s;}
+.deal-item:hover { background: rgba(255, 0, 60, 0.3); transform: translateX(-5px); }
+.deal-address { font-weight: bold; color: #fff; margin-bottom: 5px; display: block;}
+.deal-stats { color: #aaa; }
+.deal-discount { color: #ff003c; font-weight: bold; float: right;}
+
+#tooltip {
+  position: absolute; z-index: 1000; pointer-events: none;
+  background: rgba(10, 10, 15, 0.95); border: 1px solid #ff003c;
+  border-radius: 6px; padding: 12px; color: #fff; font-size: 14px;
+  box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
+  transform: translate(-50%, -130%); 
+  transition: opacity 0.1s ease;
+}
+
+#fly-home-btn {
+  position: absolute; bottom: 30px; left: 20px; z-index: 100;
+  background: rgba(10, 10, 15, 0.9); border: 1px solid #00ffcc;
+  color: #00ffcc; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-weight: bold; font-size: 14px;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); transition: 0.2s;
+}
+#fly-home-btn:hover {
+  background: rgba(0, 255, 204, 0.2); box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+}
