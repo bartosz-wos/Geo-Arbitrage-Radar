@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Geo-Arbitrage MVP</title>
+  <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@3.0.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@3.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; background-color: #000; }
+    #map { width: 100vw; height: 100vh; }
+    #ui-panel { position: absolute; top: 20px; left: 20px; z-index: 100; background: rgba(15, 15, 25, 0.9); padding: 20px; color: #00ffcc; font-family: monospace; border: 1px solid #00ffcc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div id="ui-panel">
+    <h2>Geo Arbitrage Radar 1.0</h2>
+    <p>Status: Waiting for scraper data...</p>
+  </div>
+  <div id="map"></div>
+
+  <script>
+    const deckgl = new deck.DeckGL({
+      container: 'map',
+      initialViewState: {
+        longitude: 20.982,
+        latitude: 52.231,
+        zoom: 13.5,
+        pitch: 50,
+        bearing: 0
+      },
+      controller: true,
+      mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
+      layers: []
+    });
+
+    fetch('data.json')
+    	.then(response => response.json())
+    	.then(data => {
+		document.getElementById('ui-panel').innerHTML = `
+		<h2>Geo Arbitrage Radar</h2>
+		<p>Status: Connected to Scraper</p>
+		<p>Analyzed ${data.length} offers</p>
+		`;
+
+		const scatterLayer = new deck.ScatterplotLayer({
+			id: 'arbitrage-layer',
+			data: data,
+			getPosition: d => d.position,
+			getFillColor: d => d.isArbitrage ? [255, 0, 60, 255] : [0, 255, 204, 80],
+			getRadius: d => d.isArbitrage ? 70 : 30,
+			radiusMinPixels: 6,
+			pickable: true,
+
+			onClick: info => {
+				if(info.object){
+					alert(`${info.object.address}\n Price: ${info.object.price} PLN/m²\nArbitrage: ${info.object.isArbitrage ? 'Tak' : 'Nie'}`);
+				}
+			}
+		});
+
+		deckgl.setProps({layers: [scatterLayer] });
+	})
+    	.catch(err => console.error("Critical error: Couldn't load data:", err));
+  </script>
+</body>
+</html>
